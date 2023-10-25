@@ -27,4 +27,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+using var scope = app.Services.CreateScope();
+var servies = scope.ServiceProvider;
+try
+{
+    var context = servies.GetRequiredService<DataContext>();
+    await context.Database.MigrateAsync();
+    await Seed.SeedData(context);
+}
+catch (Exception ex)
+{
+
+    var logger = servies.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "An Error occurred while running mirations");
+}
+
 app.Run();
